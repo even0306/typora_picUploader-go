@@ -1,5 +1,8 @@
 # nextcloudUploader_typora
 typora plugin，nextcloudPicUploader  
+
+在学习go语言，刚好没有找到喜欢的typora图片上传插件，便自己边查边学边练，做出来了。练手项目，写的不好
+
 nextcloud使用__File sharing__插件实现直链下载，使用开放api接口上传
 
 #### 配置文件
