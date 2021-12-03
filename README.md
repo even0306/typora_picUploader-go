@@ -1,0 +1,3 @@
+# nextcloudUploader_typora
+typora plugin，nextcloudPicUploader  
+nextcloud使用__File sharing__插件实现直链下载，使用开放api接口上传
