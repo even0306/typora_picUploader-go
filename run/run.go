@@ -47,12 +47,20 @@ func (b *Base64) upload(args string) string {
 	user := utils.Conf.User
 	passwd := utils.Conf.Passwd
 	b.Auth = map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(user+":"+passwd))}
-	b.fileName = utils.CreateUUID() + ".png"
 	b.filePath = strings.Split(strings.Split(args, "base64,")[1], ")")[0]
 	file, err := base64.StdEncoding.DecodeString(string(b.filePath))
 	if err != nil {
 		fmt.Printf("解密base64失败，error: %v", err)
 	}
+
+	//判断文件格式
+	filetype := utils.GetFileType(&file)
+	if filetype == "" {
+		fmt.Printf("没有匹配到该文件格式")
+		os.Exit(3)
+	}
+
+	b.fileName = utils.CreateUUID() + "." + filetype
 	resq.upn = b.UploadUrl + b.fileName
 	err = uploadFile.UploadFile(&resq.upn, &file, &b.Auth)
 	if err != nil {
@@ -68,12 +76,20 @@ func (l *Local) upload(args string) string {
 	user := utils.Conf.User
 	passwd := utils.Conf.Passwd
 	l.Auth = map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(user+":"+passwd))}
-	l.fileName = utils.CreateUUID() + ".png"
 	l.filePath = args
 	file, err := utils.ReadFile(&l.filePath)
 	if err != nil {
 		fmt.Printf("读取文件失败，error：%v", err)
 	}
+
+	//判断文件格式
+	filetype := utils.GetFileType(&file)
+	if filetype == "" {
+		fmt.Printf("没有匹配到该文件格式")
+		os.Exit(3)
+	}
+
+	l.fileName = utils.CreateUUID() + "." + filetype
 	resq.upn = l.UploadUrl + l.fileName
 	err = uploadFile.UploadFile(&resq.upn, &file, &l.Auth)
 	if err != nil {
@@ -90,14 +106,22 @@ func (h *Http) upload(args string) string {
 	passwd := utils.Conf.Passwd
 	h.Auth = map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(user+":"+passwd))}
 	h.Proxy = utils.Conf.Proxy
-	tmp := utils.GetLocalPath() + "/tmp.png"
-	h.fileName = utils.CreateUUID() + ".png"
+	tmp := utils.GetLocalPath() + "/tmp"
 	h.filePath = args
 	utils.DownloadFile(&h.filePath, &tmp, &h.Proxy)
 	file, err := utils.ReadFile(&tmp)
 	if err != nil {
 		fmt.Printf("读取文件失败，error：%v", err)
 	}
+
+	//判断文件格式
+	filetype := utils.GetFileType(&file)
+	if filetype == "" {
+		fmt.Printf("没有匹配到该文件格式")
+		os.Exit(3)
+	}
+
+	h.fileName = utils.CreateUUID() + "." + filetype
 	err = os.Remove(tmp)
 	if err != nil {
 		fmt.Printf("删除缓存图片失败，error：%v", err)

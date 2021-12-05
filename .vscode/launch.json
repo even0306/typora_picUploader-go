@@ -10,7 +10,8 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "main.go"
+            "program": "main.go",
+            "args": ["E:/新建 文本文档.bmp"]
         }
     ]
 }
