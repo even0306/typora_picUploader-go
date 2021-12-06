@@ -17,17 +17,13 @@ import (
 func FileType(file *string) (filetype string) {
 	if *file != "" {
 		req := strings.Split(*file, ":")[0]
-		i := []byte(req)
 		if req == "data" {
 			filetype = "base64"
 		} else if req == "http" || req == "https" {
 			filetype = "url"
-		} else if (i[0] >= 65 && i[0] <= 90) || (i[0] >= 97 && i[0] <= 122) {
-			filetype = "local"
 		} else {
-			fmt.Printf("无法识别的类型")
+			filetype = "local"
 		}
-
 	} else {
 		fmt.Printf("数据不能为空")
 	}
