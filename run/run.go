@@ -40,6 +40,8 @@ type Upload interface {
 	upload(uploadData string) string
 }
 
+var logging = utils.LogFile()
+
 func (b *Base64) upload(args string) string {
 	utils.Init(b.ConfigPath)
 	b.UploadUrl = utils.Conf.UploadUrl
@@ -50,13 +52,13 @@ func (b *Base64) upload(args string) string {
 	b.filePath = strings.Split(strings.Split(args, "base64,")[1], ")")[0]
 	file, err := base64.StdEncoding.DecodeString(string(b.filePath))
 	if err != nil {
-		fmt.Printf("解密base64失败，error: %v", err)
+		logging.Printf("解密base64失败，error: %v", err)
 	}
 
 	//判断文件格式
 	filetype := utils.GetFileType(&file)
 	if filetype == "" {
-		fmt.Printf("没有匹配到该文件格式")
+		logging.Printf("没有匹配到该文件格式")
 		os.Exit(3)
 	}
 
@@ -79,13 +81,13 @@ func (l *Local) upload(args string) string {
 	l.filePath = args
 	file, err := utils.ReadFile(&l.filePath)
 	if err != nil {
-		fmt.Printf("读取文件失败，error：%v", err)
+		logging.Printf("读取文件失败，error：%v", err)
 	}
 
 	//判断文件格式
 	filetype := utils.GetFileType(&file)
 	if filetype == "" {
-		fmt.Printf("没有匹配到该文件格式")
+		logging.Printf("没有匹配到该文件格式")
 		os.Exit(3)
 	}
 
@@ -111,13 +113,13 @@ func (h *Http) upload(args string) string {
 	utils.DownloadFile(&h.filePath, &tmp, &h.Proxy)
 	file, err := utils.ReadFile(&tmp)
 	if err != nil {
-		fmt.Printf("读取文件失败，error：%v", err)
+		logging.Printf("读取文件失败，error：%v", err)
 	}
 
 	//判断文件格式
 	filetype := utils.GetFileType(&file)
 	if filetype == "" {
-		fmt.Printf("没有匹配到该文件格式")
+		logging.Printf("没有匹配到该文件格式")
 		os.Exit(3)
 	}
 

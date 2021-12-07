@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"sync"
 )
 
@@ -24,22 +23,23 @@ var Conf *MainConfig
 var Confs Configs
 
 var instanceOnce sync.Once
+var logging = LogFile()
 
 //从配置文件中载入json字符串
 func LoadConfig(path string) (Configs, *MainConfig) {
 	buf, err := ioutil.ReadFile(path)
 	if err != nil {
-		log.Panicln("load config conf failed: ", err)
+		logging.Panicln("load config conf failed: ", err)
 	}
 	mainConfig := &MainConfig{}
 	err = json.Unmarshal(buf, mainConfig)
 	if err != nil {
-		log.Panicln("decode config file failed:", string(buf), err)
+		logging.Panicln("decode config file failed:", string(buf), err)
 	}
 	allConfigs := make(Configs, 0)
 	err = json.Unmarshal(buf, &allConfigs)
 	if err != nil {
-		log.Panicln("decode config file failed:", string(buf), err)
+		logging.Panicln("decode config file failed:", string(buf), err)
 	}
 
 	return allConfigs, mainConfig
@@ -56,7 +56,7 @@ func SetConfig(path string) {
 // 初始化，只能运行一次
 func Init(path string) *MainConfig {
 	if Conf != nil && path != configPath {
-		log.Printf("the config is already initialized, oldPath=%s, path=%s", configPath, path)
+		logging.Printf("the config is already initialized, oldPath=%s, path=%s", configPath, path)
 	}
 	instanceOnce.Do(func() {
 		allConfigs, mainConfig := LoadConfig(path)
@@ -96,6 +96,7 @@ func (cfg Configs) GetConfig(key string, config interface{}) error {
 	if ok {
 		return json.Unmarshal(c, config)
 	} else {
+		logging.Fatalf("fail to get cfg with key: %s", key)
 		return fmt.Errorf("fail to get cfg with key: %s", key)
 	}
 }

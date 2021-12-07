@@ -8,9 +8,8 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"nextcloudUploader/utils"
 	"time"
-
-	"github.com/op/go-logging"
 )
 
 //TimeoutDialer 连接超时和传输超时
@@ -27,10 +26,10 @@ func timeoutDialer(cTimeout time.Duration, rwTimeout time.Duration) func(net, ad
 
 //上传接口，传url，文件二进制，参数头
 func UploadFile(rURL *string, b *[]byte, header *map[string]string) error {
-	var logging = logging.MustGetLogger("upload")
+	logging := utils.LogFile()
 	req, err := http.NewRequest("PUT", *rURL, bytes.NewBuffer(*b))
 	if err != nil {
-		logging.Info(fmt.Sprintf("http newrequest error %s", err))
+		logging.Printf("http newrequest error %s", err)
 		return err
 	}
 	for h, v := range *header {
@@ -50,7 +49,7 @@ func UploadFile(rURL *string, b *[]byte, header *map[string]string) error {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		logging.Info(fmt.Sprintf("http client error %s", err))
+		logging.Printf("http client error %s", err)
 		return err
 	}
 	if resp != nil {
@@ -58,22 +57,22 @@ func UploadFile(rURL *string, b *[]byte, header *map[string]string) error {
 		if resp.StatusCode == http.StatusOK {
 			respData, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				logging.Info(err)
+				logging.Print(err)
 				return err
 			}
-			logging.Info(fmt.Sprintf("\n【请求地址】： %s \n【请求参数】： %s \n【请求头】： %s \n【返回】 : %s \n",
-				*rURL, "上传文件", *header, string(respData)))
+			logging.Printf("\n【请求地址】： %s \n【请求参数】： %s \n【请求头】： %s \n【返回】 : %s \n",
+				*rURL, "上传文件", *header, string(respData))
 			fmt.Println(string(respData))
 			return nil
 		} else if resp.StatusCode != http.StatusOK {
 			respData, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				logging.Info(err)
+				logging.Print(err)
 				return err
 			}
 
-			logging.Info(fmt.Sprintf("\n【请求地址】： %s \n【请求参数】： %s \n【请求头】： %s \n【返回】 : %s \n",
-				*rURL, "上传文件", *header, string(respData)))
+			logging.Printf("\n【请求地址】： %s \n【请求参数】： %s \n【请求头】： %s \n【返回】 : %s \n",
+				*rURL, "上传文件", *header, string(respData))
 			return errors.New("上传文件请求成功，上传成功")
 		}
 		return errors.New("请求失败")

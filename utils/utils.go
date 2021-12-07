@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -15,6 +14,7 @@ import (
 
 // 判断数据类型
 func FileType(file *string) (filetype string) {
+
 	if *file != "" {
 		req := strings.Split(*file, ":")[0]
 		if req == "data" {
@@ -25,7 +25,7 @@ func FileType(file *string) (filetype string) {
 			filetype = "local"
 		}
 	} else {
-		fmt.Printf("数据不能为空")
+		logging.Printf("数据不能为空")
 	}
 	return
 }
@@ -34,7 +34,7 @@ func FileType(file *string) (filetype string) {
 func ReadFile(path *string) (b []byte, e error) {
 	file, err := os.Open(*path)
 	if err != nil {
-		fmt.Printf("open file failed, error: %v", err)
+		logging.Printf("打开文件失败, error: %v", err)
 		return
 	}
 	defer file.Close()
@@ -43,7 +43,7 @@ func ReadFile(path *string) (b []byte, e error) {
 	for {
 		n, err := file.Read(buf)
 		if err != nil && err != io.EOF {
-			fmt.Printf("读取文件失败，error: %v", err)
+			logging.Printf("读取文件失败，error: %v", err)
 		}
 		if n == 0 {
 			break
@@ -66,7 +66,7 @@ func DownloadFile(imgUrl *string, path *string, proxy *string) {
 	}
 	resp, err := client.Get(*imgUrl)
 	if err != nil {
-		fmt.Print(err)
+		logging.Print(err)
 	}
 	defer resp.Body.Close()
 
@@ -95,7 +95,7 @@ func CreateUUID() (key string) {
 func GetLocalPath() (exPath string) {
 	ex, err := os.Executable()
 	if err != nil {
-		fmt.Printf("获取路径失败，error：%v", err)
+		logging.Printf("获取路径失败，error：%v", err)
 	}
 	exPath = filepath.Dir(ex)
 	return
