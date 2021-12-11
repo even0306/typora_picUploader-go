@@ -1,0 +1,4 @@
+[uploader]2021/12/09 20:20:42 utils.go:37: 打开文件失败, error: open E:/新建 文本文档.bmp: The system cannot find the file specified.
+[uploader]2021/12/09 20:20:42 uploadFile.go:52: http client error Put "a2d0fc79-ac16-4fae-b2ef-efffaad96f77.sql": unsupported protocol scheme ""
+[uploader]2021/12/09 20:21:44 utils.go:37: 打开文件失败, error: open E:/新建 文本文档.bmp: The system cannot find the file specified.
+[uploader]2021/12/09 20:21:44 uploadFile.go:52: http client error Put "0c4b1e3b-e735-494d-9f9b-17de846a7033.jsp": unsupported protocol scheme ""

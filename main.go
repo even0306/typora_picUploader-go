@@ -16,9 +16,9 @@ func main() {
 		req string
 	}
 
-	bs64.ConfigPath = utils.ConfigPath("./config.json")
-	local.ConfigPath = utils.ConfigPath("./config.json")
-	http.ConfigPath = utils.ConfigPath("./config.json")
+	// bs64.ConfigPath = utils.ReadConfig("./config.json")
+	// local.ConfigPath = utils.ConfigPath("./config.json")
+	// http.ConfigPath = utils.ConfigPath("./config.json")
 
 	for idx, args := range os.Args {
 		if idx == 0 {
@@ -26,11 +26,11 @@ func main() {
 		}
 		r.req = utils.FileType(&args)
 		if r.req == "base64" {
-			r.url = run.Run(&bs64, &args)
+			r.url = *run.Run(&bs64, &args)
 		} else if r.req == "url" {
-			r.url = run.Run(&http, &args)
+			r.url = *run.Run(&http, &args)
 		} else if r.req == "local" {
-			r.url = run.Run(&local, &args)
+			r.url = *run.Run(&local, &args)
 		}
 		if r.url != "" {
 			fmt.Printf("Upload Success:\n")

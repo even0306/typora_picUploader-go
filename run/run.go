@@ -43,11 +43,25 @@ type Upload interface {
 var logging = utils.LogFile()
 
 func (b *Base64) upload(args string) string {
-	utils.Init(b.ConfigPath)
-	b.UploadUrl = utils.Conf.UploadUrl
-	b.DownloadUrl = utils.Conf.DownloadUrl
-	user := utils.Conf.User
-	passwd := utils.Conf.Passwd
+	// utils.Init(b.ConfigPath)
+	// b.UploadUrl = utils.Conf.UploadUrl
+	// b.DownloadUrl = utils.Conf.DownloadUrl
+	// user := utils.Conf.User
+	// passwd := utils.Conf.Passwd
+	// b.Auth = map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(user+":"+passwd))}
+
+	config := utils.ReadConfig().(struct {
+		Bucket string
+		Domain string
+		User   string
+		Passwd string
+		Proxy  string
+	})
+
+	b.UploadUrl = config.Bucket
+	b.DownloadUrl = config.Domain
+	user := config.User
+	passwd := config.Passwd
 	b.Auth = map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(user+":"+passwd))}
 	b.filePath = strings.Split(strings.Split(args, "base64,")[1], ")")[0]
 	file, err := base64.StdEncoding.DecodeString(string(b.filePath))
@@ -72,11 +86,25 @@ func (b *Base64) upload(args string) string {
 }
 
 func (l *Local) upload(args string) string {
-	utils.Init(l.ConfigPath)
-	l.UploadUrl = utils.Conf.UploadUrl
-	l.DownloadUrl = utils.Conf.DownloadUrl
-	user := utils.Conf.User
-	passwd := utils.Conf.Passwd
+	// utils.Init(l.ConfigPath)
+	// l.UploadUrl = utils.Conf.UploadUrl
+	// l.DownloadUrl = utils.Conf.DownloadUrl
+	// user := utils.Conf.User
+	// passwd := utils.Conf.Passwd
+	// l.Auth = map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(user+":"+passwd))}
+
+	config := utils.ReadConfig().(struct {
+		Bucket string
+		Domain string
+		User   string
+		Passwd string
+		Proxy  string
+	})
+
+	l.UploadUrl = config.Bucket
+	l.DownloadUrl = config.Domain
+	user := config.User
+	passwd := config.Passwd
 	l.Auth = map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(user+":"+passwd))}
 	l.filePath = args
 	file, err := utils.ReadFile(&l.filePath)
@@ -101,13 +129,29 @@ func (l *Local) upload(args string) string {
 }
 
 func (h *Http) upload(args string) string {
-	utils.Init(h.ConfigPath)
-	h.UploadUrl = utils.Conf.UploadUrl
-	h.DownloadUrl = utils.Conf.DownloadUrl
-	user := utils.Conf.User
-	passwd := utils.Conf.Passwd
+	// utils.Init(h.ConfigPath)
+	// h.UploadUrl = utils.Conf.UploadUrl
+	// h.DownloadUrl = utils.Conf.DownloadUrl
+	// user := utils.Conf.User
+	// passwd := utils.Conf.Passwd
+	// h.Auth = map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(user+":"+passwd))}
+	// h.Proxy = utils.Conf.Proxy
+
+	config := utils.ReadConfig().(struct {
+		Bucket string
+		Domain string
+		User   string
+		Passwd string
+		Proxy  string
+	})
+
+	h.UploadUrl = config.Bucket
+	h.DownloadUrl = config.Domain
+	user := config.User
+	passwd := config.Passwd
 	h.Auth = map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(user+":"+passwd))}
-	h.Proxy = utils.Conf.Proxy
+	h.Proxy = config.Proxy
+
 	tmp := utils.GetLocalPath() + "/tmp"
 	h.filePath = args
 	utils.DownloadFile(&h.filePath, &tmp, &h.Proxy)
@@ -136,7 +180,7 @@ func (h *Http) upload(args string) string {
 	return resq.fmtUrl
 }
 
-func Run(up Upload, args *string) string {
+func Run(up Upload, args *string) *string {
 	arg := up.upload(*args)
-	return arg
+	return &arg
 }
