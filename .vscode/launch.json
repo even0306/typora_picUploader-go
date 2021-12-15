@@ -10,8 +10,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "main.go",
-            "args": ["https://pic.3gbizhi.com/2020/0826/thumb_1680_0_20200826123917742.jpg"]
+            "program": "main.go"
         }
     ]
 }
