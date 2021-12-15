@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"nextcloudUploader/logs"
+	"picUploader/logs"
 
 	"github.com/google/uuid"
 )

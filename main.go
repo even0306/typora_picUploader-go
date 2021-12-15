@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"nextcloudUploader/logs"
-	"nextcloudUploader/run"
-	"nextcloudUploader/utils"
 	"os"
+	"picUploader/logs"
+	"picUploader/run"
+	"picUploader/utils"
 )
 
 func main() {

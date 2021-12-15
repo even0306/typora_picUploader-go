@@ -8,8 +8,8 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"nextcloudUploader/logs"
 	"os"
+	"picUploader/logs"
 	"time"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"

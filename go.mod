@@ -1,4 +1,4 @@
-module nextcloudUploader
+module picUploader
 
 go 1.17
 

@@ -3,8 +3,8 @@ package config
 import (
 	"encoding/json"
 	"io/ioutil"
-	"nextcloudUploader/logs"
 	"os"
+	"picUploader/logs"
 )
 
 var logging = logs.LogFile()

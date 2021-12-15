@@ -3,11 +3,11 @@ package run
 import (
 	"encoding/base64"
 	"fmt"
-	"nextcloudUploader/config"
-	"nextcloudUploader/logs"
-	"nextcloudUploader/uploadFile"
-	"nextcloudUploader/utils"
 	"os"
+	"picUploader/config"
+	"picUploader/logs"
+	"picUploader/uploadFile"
+	"picUploader/utils"
 	"strings"
 )
 
