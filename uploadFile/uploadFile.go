@@ -8,8 +8,11 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"nextcloudUploader/utils"
+	"nextcloudUploader/logs"
+	"os"
 	"time"
+
+	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 )
 
 //TimeoutDialer 连接超时和传输超时
@@ -24,9 +27,11 @@ func timeoutDialer(cTimeout time.Duration, rwTimeout time.Duration) func(net, ad
 	}
 }
 
+var logging = logs.LogFile()
+
 //上传接口，传url，文件二进制，参数头
-func UploadFile(rURL *string, b *[]byte, header *map[string]string) error {
-	logging := utils.LogFile()
+func NextcloudUploadFile(rURL *string, b *[]byte, header *map[string]string) error {
+
 	req, err := http.NewRequest("PUT", *rURL, bytes.NewBuffer(*b))
 	if err != nil {
 		logging.Printf("http newrequest error %s", err)
@@ -80,4 +85,29 @@ func UploadFile(rURL *string, b *[]byte, header *map[string]string) error {
 	defer resp.Body.Close()
 
 	return errors.New("请求失败")
+}
+
+//阿里云OSS上传
+func AliyunOssUploadFile(endpoint *string, accessKeyId *string, accessKeySecret *string, bucketName *string, fileName *string, fileByte *[]byte) string {
+	client, err := oss.New(*endpoint, *accessKeyId, *accessKeySecret)
+	if err != nil {
+		// HandleError(err)
+		logging.Printf("创建阿里云上传客户端失败，error：%v", err)
+		os.Exit(-1)
+	}
+
+	bucket, err := client.Bucket(*bucketName)
+	if err != nil {
+		// HandleError(err)
+		logging.Printf("获取阿里云桶失败，error：%v", err)
+		os.Exit(-1)
+	}
+
+	err = bucket.PutObject(*fileName, bytes.NewReader([]byte(*fileByte)))
+	if err != nil {
+		// HandleError(err)
+		logging.Printf("阿里云上传失败，error：%v", err)
+		os.Exit(-1)
+	}
+	return "https://" + *bucketName + "." + *endpoint + "/" + *fileName
 }

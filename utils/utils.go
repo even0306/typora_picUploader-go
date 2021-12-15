@@ -9,8 +9,12 @@ import (
 	"strings"
 	"time"
 
+	"nextcloudUploader/logs"
+
 	"github.com/google/uuid"
 )
+
+var logging = logs.LogFile()
 
 // 判断数据类型
 func FileType(file *string) (filetype string) {
@@ -31,7 +35,7 @@ func FileType(file *string) (filetype string) {
 }
 
 //读取文件为二进制格式
-func ReadFile(path *string) (b []byte, e error) {
+func ReadFile(path *string) (b *[]byte, e error) {
 	file, err := os.Open(*path)
 	if err != nil {
 		logging.Printf("打开文件失败, error: %v", err)
@@ -50,7 +54,7 @@ func ReadFile(path *string) (b []byte, e error) {
 		}
 		chunks = append(chunks, buf[:n]...)
 	}
-	return chunks, err
+	return &chunks, err
 }
 
 // 下载文件

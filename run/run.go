@@ -3,6 +3,8 @@ package run
 import (
 	"encoding/base64"
 	"fmt"
+	"nextcloudUploader/config"
+	"nextcloudUploader/logs"
 	"nextcloudUploader/uploadFile"
 	"nextcloudUploader/utils"
 	"os"
@@ -31,156 +33,130 @@ type Data struct {
 	ConfigPath  string
 }
 
+var conf = config.ReadConfig().(struct {
+	PicBed     string
+	Bucket     string
+	Domain     string
+	BucketName string
+	Path       string
+	User       string
+	Passwd     string
+	Proxy      string
+})
+
 var resq struct {
-	fmtUrl string
-	upn    string
+	fmtUrl   string
+	upName   string
+	filetype string
 }
 
 type Upload interface {
-	upload(uploadData string) string
+	upload(uploadData *string) *string
 }
 
-var logging = utils.LogFile()
+var logging = logs.LogFile()
 
-func (b *Base64) upload(args string) string {
-	// utils.Init(b.ConfigPath)
-	// b.UploadUrl = utils.Conf.UploadUrl
-	// b.DownloadUrl = utils.Conf.DownloadUrl
-	// user := utils.Conf.User
-	// passwd := utils.Conf.Passwd
-	// b.Auth = map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(user+":"+passwd))}
-
-	config := utils.ReadConfig().(struct {
-		Bucket string
-		Domain string
-		User   string
-		Passwd string
-		Proxy  string
-	})
-
-	b.UploadUrl = config.Bucket
-	b.DownloadUrl = config.Domain
-	user := config.User
-	passwd := config.Passwd
+//base64上传
+func (b *Base64) upload(args *string) *string {
+	user := conf.User
+	passwd := conf.Passwd
+	b.UploadUrl = conf.Bucket + "/" + user + "/" + conf.Path + "/"
+	b.DownloadUrl = conf.Domain + "/" + user + "/" + conf.Path + "/"
 	b.Auth = map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(user+":"+passwd))}
-	b.filePath = strings.Split(strings.Split(args, "base64,")[1], ")")[0]
+	b.filePath = strings.Split(strings.Split(*args, "base64,")[1], ")")[0]
 	file, err := base64.StdEncoding.DecodeString(string(b.filePath))
 	if err != nil {
 		logging.Printf("解密base64失败，error: %v", err)
 	}
 
 	//判断文件格式
-	filetype := utils.GetFileType(&file)
-	if filetype == "" {
-		logging.Printf("没有匹配到该文件格式")
-		os.Exit(3)
+	resq.filetype = utils.GetFileExt(&file) //base64如何判断文件类型？？？
+	if resq.filetype == "" {
+		logging.Printf("文件格式不支持")
+		os.Exit(-1)
 	}
 
-	b.fileName = utils.CreateUUID() + "." + filetype
-	resq.upn = b.UploadUrl + b.fileName
-	err = uploadFile.UploadFile(&resq.upn, &file, &b.Auth)
+	b.fileName = utils.CreateUUID() + "." + resq.filetype
+	resq.upName = b.UploadUrl + b.fileName
+	err = uploadFile.NextcloudUploadFile(&resq.upName, &file, &b.Auth)
 	if err != nil {
 		resq.fmtUrl = b.DownloadUrl + b.fileName + "\n"
 	}
-	return resq.fmtUrl
+	return &resq.fmtUrl
 }
 
-func (l *Local) upload(args string) string {
-	// utils.Init(l.ConfigPath)
-	// l.UploadUrl = utils.Conf.UploadUrl
-	// l.DownloadUrl = utils.Conf.DownloadUrl
-	// user := utils.Conf.User
-	// passwd := utils.Conf.Passwd
-	// l.Auth = map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(user+":"+passwd))}
-
-	config := utils.ReadConfig().(struct {
-		Bucket string
-		Domain string
-		User   string
-		Passwd string
-		Proxy  string
-	})
-
-	l.UploadUrl = config.Bucket
-	l.DownloadUrl = config.Domain
-	user := config.User
-	passwd := config.Passwd
+//本地文件上传
+func (l *Local) upload(args *string) *string {
+	user := conf.User
+	passwd := conf.Passwd
+	l.UploadUrl = conf.Bucket + "/" + user + "/" + conf.Path + "/"
+	l.DownloadUrl = conf.Domain + "/" + user + "/" + conf.Path + "/"
 	l.Auth = map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(user+":"+passwd))}
-	l.filePath = args
+	l.filePath = *args
 	file, err := utils.ReadFile(&l.filePath)
 	if err != nil {
 		logging.Printf("读取文件失败，error：%v", err)
 	}
 
 	//判断文件格式
-	filetype := utils.GetFileType(&file)
-	if filetype == "" {
-		logging.Printf("没有匹配到该文件格式")
-		os.Exit(3)
+	resq.filetype = utils.GetFileExt(file)
+	if resq.filetype == "" {
+		logging.Printf("文件格式不支持")
+		os.Exit(-1)
 	}
 
-	l.fileName = utils.CreateUUID() + "." + filetype
-	resq.upn = l.UploadUrl + l.fileName
-	err = uploadFile.UploadFile(&resq.upn, &file, &l.Auth)
-	if err != nil {
-		resq.fmtUrl = l.DownloadUrl + l.fileName + "\n"
+	l.fileName = utils.CreateUUID() + "." + resq.filetype
+	resq.upName = l.UploadUrl + l.fileName
+	if conf.PicBed == "nextcloud" {
+		err = uploadFile.NextcloudUploadFile(&resq.upName, file, &l.Auth)
+		if err != nil {
+			resq.fmtUrl = l.DownloadUrl + l.fileName + "\n"
+		}
+	} else if conf.PicBed == "aliyunOss" {
+		resq.fmtUrl = uploadFile.AliyunOssUploadFile(&conf.Bucket, &conf.User, &conf.Passwd, &conf.BucketName, &l.fileName, file)
 	}
-	return resq.fmtUrl
+	return &resq.fmtUrl
 }
 
-func (h *Http) upload(args string) string {
-	// utils.Init(h.ConfigPath)
-	// h.UploadUrl = utils.Conf.UploadUrl
-	// h.DownloadUrl = utils.Conf.DownloadUrl
-	// user := utils.Conf.User
-	// passwd := utils.Conf.Passwd
-	// h.Auth = map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(user+":"+passwd))}
-	// h.Proxy = utils.Conf.Proxy
-
-	config := utils.ReadConfig().(struct {
-		Bucket string
-		Domain string
-		User   string
-		Passwd string
-		Proxy  string
-	})
-
-	h.UploadUrl = config.Bucket
-	h.DownloadUrl = config.Domain
-	user := config.User
-	passwd := config.Passwd
+//网络文件上传
+func (h *Http) upload(args *string) *string {
+	user := conf.User
+	passwd := conf.Passwd
+	h.UploadUrl = conf.Bucket + "/" + user + "/" + conf.Path + "/"
+	h.DownloadUrl = conf.Domain + "/" + user + "/" + conf.Path + "/"
 	h.Auth = map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(user+":"+passwd))}
-	h.Proxy = config.Proxy
+	h.Proxy = conf.Proxy
 
-	tmp := utils.GetLocalPath() + "/tmp"
-	h.filePath = args
+	tmp := "./tmp"
+	h.filePath = *args
 	utils.DownloadFile(&h.filePath, &tmp, &h.Proxy)
+
 	file, err := utils.ReadFile(&tmp)
 	if err != nil {
 		logging.Printf("读取文件失败，error：%v", err)
 	}
 
 	//判断文件格式
-	filetype := utils.GetFileType(&file)
-	if filetype == "" {
-		logging.Printf("没有匹配到该文件格式")
-		os.Exit(3)
+	resq.filetype = utils.GetFileExt(file)
+	if resq.filetype == "" {
+		logging.Printf("文件格式不支持")
+		os.Exit(-1)
 	}
 
-	h.fileName = utils.CreateUUID() + "." + filetype
+	h.fileName = utils.CreateUUID() + "." + resq.filetype
 	err = os.Remove(tmp)
 	if err != nil {
 		fmt.Printf("删除缓存图片失败，error：%v", err)
 	}
-	resq.upn = h.UploadUrl + h.fileName
-	err = uploadFile.UploadFile(&resq.upn, &file, &h.Auth)
+	resq.upName = h.UploadUrl + h.fileName
+	err = uploadFile.NextcloudUploadFile(&resq.upName, file, &h.Auth)
 	if err != nil {
 		resq.fmtUrl = h.DownloadUrl + h.fileName + "\n"
 	}
-	return resq.fmtUrl
+	return &resq.fmtUrl
 }
 
 func Run(up Upload, args *string) *string {
-	arg := up.upload(*args)
-	return &arg
+	arg := up.upload(args)
+	return arg
 }
