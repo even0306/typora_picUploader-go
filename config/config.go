@@ -44,7 +44,7 @@ var Config struct {
 }
 
 func ReadConfig() interface{} {
-	jsonFile, err := os.Open("E:/config.json")
+	jsonFile, err := os.Open("./config.json")
 	if err != nil {
 		logging.Printf("打开配置文件失败，error：%v", err)
 	}
