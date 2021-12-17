@@ -5,11 +5,9 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
+	"picUploader/logs"
 	"strings"
 	"time"
-
-	"picUploader/logs"
 
 	"github.com/google/uuid"
 )
@@ -92,15 +90,5 @@ func DownloadFile(imgUrl *string, path *string, proxy *string) {
 func CreateUUID() (key string) {
 	uuid := uuid.New()
 	key = uuid.String()
-	return
-}
-
-// 获取执行文件当前所在路径
-func GetLocalPath() (exPath string) {
-	ex, err := os.Executable()
-	if err != nil {
-		logging.Printf("获取路径失败，error：%v", err)
-	}
-	exPath = filepath.Dir(ex)
 	return
 }

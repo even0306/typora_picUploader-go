@@ -18,10 +18,6 @@ func main() {
 		req string
 	}
 
-	// bs64.ConfigPath = utils.ReadConfig("./config.json")
-	// local.ConfigPath = utils.ConfigPath("./config.json")
-	// http.ConfigPath = utils.ConfigPath("./config.json")
-
 	for idx, args := range os.Args {
 		if idx == 0 {
 			continue
@@ -38,6 +34,8 @@ func main() {
 			r.url = *run.Run(&local, &args)
 		}
 		if r.url != "" {
+			logging.Printf("Upload Success:\n")
+			logging.Printf(r.url + "\n")
 			fmt.Printf("Upload Success:\n")
 			fmt.Printf(r.url + "\n")
 		}

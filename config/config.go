@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"picUploader/logs"
+	getexecpath "picUploader/utils/getExecPath"
 )
 
 var logging = logs.LogFile()
@@ -44,7 +45,7 @@ var Config struct {
 }
 
 func ReadConfig() interface{} {
-	jsonFile, err := os.Open("./config.json")
+	jsonFile, err := os.Open(getexecpath.GetLocalPath() + "/config.json")
 	if err != nil {
 		logging.Printf("打开配置文件失败，error：%v", err)
 	}

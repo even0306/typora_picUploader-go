@@ -8,6 +8,7 @@ import (
 	"picUploader/logs"
 	"picUploader/uploadFile"
 	"picUploader/utils"
+	getexecpath "picUploader/utils/getExecPath"
 	"strings"
 )
 
@@ -127,7 +128,7 @@ func (h *Http) upload(args *string) *string {
 	h.Auth = map[string]string{"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(user+":"+passwd))}
 	h.Proxy = conf.Proxy
 
-	tmp := "./tmp"
+	tmp := getexecpath.GetLocalPath() + "/tmp"
 	h.filePath = *args
 	utils.DownloadFile(&h.filePath, &tmp, &h.Proxy)
 
